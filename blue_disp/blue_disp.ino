@@ -66,7 +66,7 @@ struct WeatherData {
 } weatherData;
 
 // 시간 및 날짜 표시용 버퍼
-char timeString[20] = "MM-DD HH:MM";
+char timeString[20] = "MM-DD HH:MM:SS";
 
 // 내부 시간 관리용 변수
 unsigned long timeLastSyncMillis = 0;  // 마지막으로 NTP 시간 동기화한 시점의 millis() 값
@@ -289,10 +289,10 @@ void updateTimeString() {
   time_t time_now = mktime(&timeinfo_saved) + elapsedSeconds;
   struct tm *timeinfo_current = localtime(&time_now);
   
-  // MM-DD HH:MM 형식으로 시간 문자열 생성
-  sprintf(timeString, "%02d-%02d %02d:%02d", 
+  // MM-DD HH:MM:SS 형식으로 시간 문자열 생성 (초 추가)
+  sprintf(timeString, "%02d-%02d %02d:%02d:%02d", 
           timeinfo_current->tm_mon + 1, timeinfo_current->tm_mday, 
-          timeinfo_current->tm_hour, timeinfo_current->tm_min);  
+          timeinfo_current->tm_hour, timeinfo_current->tm_min, timeinfo_current->tm_sec);  
 }
 
 // NTP 서버와 시간 동기화
@@ -480,11 +480,15 @@ bool connectWiFi() {
 
 void initDisplay() {
   u8g2.begin();
+  delay(100);  // 초기화 후 약간의 지연 추가
+  
   u8g2.clearBuffer();
   u8g2.setFont(u8g2_font_6x10_tf);
   u8g2.setCursor(0, 10);
   u8g2.print("Init...");
   u8g2.sendBuffer();
+  
+  delay(500);  // 메시지를 잠시 표시
 }
 
 void setup() {
@@ -606,18 +610,27 @@ void updateDisplay() {
   // 날짜와 시간 표시 (첫번째 줄)
   u8g2.clearBuffer();
 
-  u8g2.setCursor(0, 10);
+  u8g2.setFont(u8g2_font_5x8_tf);  // 더 작은 폰트로 변경하여 모든 정보가 표시되도록 함
+  u8g2.setCursor(0, 8);
   u8g2.print(timeString);
     
-  // 온도 및 습도 표시
+  // 온도 및 습도 표시 - 중앙 정렬
+  u8g2.setFont(u8g2_font_6x10_tf);  // 기존 폰트 크기로 복원
+  
   char tempStr[16];
   sprintf(tempStr, "%.1fC", weatherData.temperature);
-  u8g2.setCursor(0, 30);
+  
+  // 텍스트 폭 계산 후 중앙에 위치시키기
+  int tempWidth = u8g2.getStrWidth(tempStr);
+  u8g2.setCursor((70 - tempWidth) / 2, 25);  
   u8g2.print(tempStr);
   
   char humStr[16];
   sprintf(humStr, "%d%%", weatherData.humidity);
-  u8g2.setCursor(0, 40);
+  
+  // 텍스트 폭 계산 후 중앙에 위치시키기
+  int humWidth = u8g2.getStrWidth(humStr);
+  u8g2.setCursor((70 - humWidth) / 2, 38);  
   u8g2.print(humStr);
   
   u8g2.sendBuffer();
