@@ -439,6 +439,13 @@ void setupBLE() {
   Serial.println("BLE advertising started - Device name: ESP32_OLED");
 }
 
+void showMessage(String message) {
+  u8g2.clearBuffer();
+  u8g2.setCursor(0, 10);
+  u8g2.print(message);
+  u8g2.sendBuffer();
+}
+
 // WiFi 연결 함수
 bool connectWiFi() {
   if (ssid.length() == 0 || password.length() == 0) {
@@ -446,6 +453,8 @@ bool connectWiFi() {
     return false;
   }
   
+  showMessage("WiFi...");
+
   Serial.print("Connecting to WiFi");
   WiFi.begin(ssid.c_str(), password.c_str());
   
@@ -469,11 +478,20 @@ bool connectWiFi() {
   }
 }
 
+void initDisplay() {
+  u8g2.begin();
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_6x10_tf);
+  u8g2.setCursor(0, 10);
+  u8g2.print("Init...");
+  u8g2.sendBuffer();
+}
+
 void setup() {
   Serial.begin(115200);
   Serial.println("Starting BLE OLED Display with Weather");
   
-  u8g2.begin();
+  initDisplay();
   
   // SPIFFS 초기화
   if (!SPIFFS.begin(true)) {
@@ -500,6 +518,7 @@ void setup() {
     if (wifiConnected) {
       // 시간 서버 초기화 (최초 한번만 NTP 서버와 동기화)
       Serial.println("Initializing NTP time...");
+      showMessage("Get Time...");
       syncTimeNTP();
       
       // 날씨 데이터 초기화
@@ -515,6 +534,7 @@ void setup() {
   
   // BLE 설정
   Serial.println("Initializing BLE...");
+  showMessage("Init BLE...");
   setupBLE();
   
   // 초기 화면 표시
@@ -582,16 +602,13 @@ void loop() {
 }
 
 void updateDisplay() {
-  u8g2.clearBuffer();
-  u8g2.setFont(u8g2_font_6x10_tf);
   
   // 날짜와 시간 표시 (첫번째 줄)
+  u8g2.clearBuffer();
+
   u8g2.setCursor(0, 10);
   u8g2.print(timeString);
-  
-  // 두 번째 줄은 빈칸으로
-  // 이전 코드 제거
-  
+    
   // 온도 및 습도 표시
   char tempStr[16];
   sprintf(tempStr, "%.1fC", weatherData.temperature);
@@ -604,7 +621,6 @@ void updateDisplay() {
   u8g2.print(humStr);
   
   u8g2.sendBuffer();
-  // Serial.println("Display updated"); // 출력이 너무 많아서 주석 처리
 }
 
 void updateStatusDisplay() {
