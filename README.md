@@ -4,6 +4,8 @@
 
 이 프로젝트는 ESP32 마이크로컨트롤러와 OLED 디스플레이를 사용하여 만든 소형 날씨 표시 장치와, 이를 설정하기 위한 Flutter 모바일 앱으로 구성되어 있습니다. BLE(Bluetooth Low Energy) 통신을 통해 모바일 앱에서 ESP32 장치의 WiFi 설정과 OpenWeatherMap API 키 등을 구성할 수 있습니다.
 
+![ESP32 날씨 스테이션](IMG_0253.png)
+
 ## 구성 요소
 
 ### 1. ESP32 하드웨어 장치 (blue_disp)
